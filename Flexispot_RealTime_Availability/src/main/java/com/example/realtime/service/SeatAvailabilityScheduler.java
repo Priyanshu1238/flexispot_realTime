@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.realtime.model.SeatAvailablity;
 import com.example.realtime.repository.SeatAvailabilityRepo;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
 @Service
 public class SeatAvailabilityScheduler {
@@ -18,14 +19,21 @@ public class SeatAvailabilityScheduler {
 	
 	
 	
+	
+	
 	@Scheduled(fixedRate = 60000) // runs every 1 minute
     public void autoReleaseExpiredSeats() {
         LocalDateTime now = LocalDateTime.now();
 
         List<SeatAvailablity> allSeats = repo.findAll();
         for (SeatAvailablity seat : allSeats) {
-            if (!seat.isAvailable() && seat.getTimeSlot().plusHours(1).isBefore(now)) {
+            if (!seat.isAvailable()
+                    && seat.getTimeSlot() != null
+                    && seat.getDurationMinutes() != null
+                    && seat.getTimeSlot().plusMinutes(seat.getDurationMinutes()).isBefore(now)) {
                 seat.setAvailable(true);
+                
+                seat.setAvailableSince(LocalDateTime.now());
                 repo.save(seat);
             }
         }
