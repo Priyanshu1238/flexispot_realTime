@@ -73,4 +73,23 @@ public class SeatAvailabilityService {
 	        }
 	        return false;
 	    }
+
+	public boolean cancelSeat(Integer id) {
+		// TODO Auto-generated method stub
+		
+		
+	        Optional<SeatAvailablity> optionalSeat = repo.findById(id);
+	        if (optionalSeat.isPresent()) {
+	            SeatAvailablity seat = optionalSeat.get();
+	            seat.setAvailable(true);
+	            seat.setTimeSlot(null);
+	            seat.setDurationMinutes(0);
+	            seat.setAvailableSince(LocalDateTime.now());
+	            repo.save(seat);
+	            return true;
+	        } else {
+	            return false;
+	        }
+	    
+	}
 }

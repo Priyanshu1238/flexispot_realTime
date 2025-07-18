@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Seat Availability</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      border-radius: 10px;
+      width: 180px;
+      text-align: center;
+    }
+    .unavailable {
+      opacity: 0.5;
+      background-color: #f8d7da;
+    }
+    .cancel-btn {
+      margin-top: 10px;
+      padding: 6px 10px;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Seat Availability</h1>
+  <div id="seat-grid" class="grid"></div>
+
+  <script>
+    const grid = document.getElementById("seat-grid");
+
+    function fetchSeats() {
+      fetch("http://localhost:8080/seat/availability")
+        .then((res) => res.json())
+        .then((data) => {
+          grid.innerHTML = ""; // Clear old content
+          data.forEach((seat) => {
+            const card = document.createElement("div");
+            card.classList.add("card");
+
+            const isAvailable = seat.available === true;
+
+            if (!isAvailable) {
+              card.classList.add("unavailable");
+            }
+
+            // Calculate release time
+            let releaseInfo = "";
+            if (!isAvailable && seat.timeSlot && seat.durationMinutes) {
+              const timeSlot = new Date(seat.timeSlot);
+              const releaseTime = new Date(timeSlot.getTime() + seat.durationMinutes * 60000);
+              releaseInfo = `<p>Releases at: ${releaseTime.toLocaleString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+                day: '2-digit',
+                month: 'short'
+              })}</p>`;
+            }
+
+            card.innerHTML = `
+              <h3>${seat.seatId}</h3>
+              <p>Location: ${seat.location}</p>
+              <p>Status: ${isAvailable ? "Available" : "Unavailable"}</p>
+              ${releaseInfo}
+            `;
+
+            // Add cancel button for unavailable seats
+            if (!isAvailable) {
+              const cancelBtn = document.createElement("button");
+              cancelBtn.textContent = "Cancel";
+              cancelBtn.classList.add("cancel-btn");
+              cancelBtn.onclick = () => cancelSeat(seat.id);
+              card.appendChild(cancelBtn);
+            }
+
+            grid.appendChild(card);
+          });
+        })
+        .catch((err) => {
+          grid.innerHTML = `<p style="color:red;">Error fetching seat data.</p>`;
+          console.error(err);
+        });
+    }
+
+    function cancelSeat(id) {
+      fetch(`http://localhost:8080/seat/cancel/${id}`, {
+        method: "PUT",
+      })
+        .then((res) => {
+          if (res.ok) {
+            alert("Seat cancelled successfully.");
+            fetchSeats(); // Reload seat grid
+          } else {
+            alert("Failed to cancel seat.");
+          }
+        })
+        .catch((err) => {
+          console.error("Cancel error:", err);
+          alert("Error occurred during cancellation.");
+        });
+    }
+
+    fetchSeats();
+  </script>
+</body>
+</html>

@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +44,16 @@ public class SeatAvailabilityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSeat);
     }
 	
+	
+	  @PutMapping("/cancel/{id}")
+	    public ResponseEntity<String> cancelSeat(@PathVariable Integer id) {
+	        boolean result = service.cancelSeat(id);
+	        if (result) {
+	            return ResponseEntity.ok("Seat cancelled successfully");
+	        } else {
+	            return ResponseEntity.notFound().build();
+	        }
+	    }
 		
 	
 }
