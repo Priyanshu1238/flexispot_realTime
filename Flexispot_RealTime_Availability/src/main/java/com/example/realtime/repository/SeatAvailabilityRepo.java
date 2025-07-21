@@ -11,7 +11,10 @@ import com.example.realtime.model.SeatAvailablity;
 @Repository
 public interface SeatAvailabilityRepo extends JpaRepository<SeatAvailablity,Integer> {
 
-	List<SeatAvailablity> findByIsAvailableTrue();
+//	List<SeatAvailablity> findByIsAvailableTrue();
 
 	Optional<SeatAvailablity> findBySeatId(String seatId);
+	
+	
+	
 }
